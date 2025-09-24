@@ -1,30 +1,17 @@
 import React from 'react';
-import { useDraggable } from '@dnd-kit/core';
 import { type Piece } from '../engine/shapes';
 import { hexToPixel } from '../engine/coords';
 import { GRID_CONFIG } from '../config/grid.config';
 
-interface PiecePreviewProps {
+interface DragOverlayContentProps {
   piece: Piece;
-  index: number;
 }
 
-export const PiecePreview: React.FC<PiecePreviewProps> = ({ piece, index }) => {
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
-    id: piece.id,
-    data: { piece },
-    disabled: index < 0, // Disable dragging for overlay preview
-  });
-
-  const style = transform ? {
-    transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-  } : undefined;
-
-  // For drag overlay (index < 0), use board cell size
-  const isOverlay = index < 0;
-  const cellSize = isOverlay ? GRID_CONFIG.cellSize : GRID_CONFIG.previewCellSize;
-  const svgSize = isOverlay ? 150 : 120;
-
+export const DragOverlayContent: React.FC<DragOverlayContentProps> = ({ piece }) => {
+  // Use board cell size for drag overlay to ensure proper alignment
+  const cellSize = GRID_CONFIG.cellSize;
+  const gap = GRID_CONFIG.cellGap;
+  
   // Calculate bounds of the piece
   let minX = Infinity, maxX = -Infinity;
   let minY = Infinity, maxY = -Infinity;
@@ -38,25 +25,18 @@ export const PiecePreview: React.FC<PiecePreviewProps> = ({ piece, index }) => {
     maxY = Math.max(maxY, pos.y + hexRadius);
   });
 
+  const width = maxX - minX + gap * 2;
+  const height = maxY - minY + gap * 2;
   const centerX = (minX + maxX) / 2;
   const centerY = (minY + maxY) / 2;
 
-  // Use the piece's actual color
-  const pieceColor = piece.color;
-
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      {...listeners}
-      {...attributes}
-      className={`cursor-move ${isDragging ? 'opacity-50' : ''}`}
-    >
+    <div style={{ pointerEvents: 'none', cursor: 'grabbing' }}>
       <svg
-        width={svgSize}
-        height={svgSize}
-        viewBox={`${centerX - svgSize / 2} ${centerY - svgSize / 2} ${svgSize} ${svgSize}`}
-        className="overflow-visible"
+        width={width}
+        height={height}
+        viewBox={`${minX - gap} ${minY - gap} ${width} ${height}`}
+        style={{ opacity: 0.8 }}
       >
         <g>
           {piece.cells.map((cell, i) => {
@@ -72,11 +52,10 @@ export const PiecePreview: React.FC<PiecePreviewProps> = ({ piece, index }) => {
               <polygon
                 key={i}
                 points={points}
-                fill={pieceColor}
+                fill={piece.color}
                 stroke="#111"
-                strokeWidth={1}
+                strokeWidth={2}
                 transform={`translate(${pos.x}, ${pos.y})`}
-                opacity={0.9}
               />
             );
           })}

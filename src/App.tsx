@@ -9,6 +9,7 @@ import {
 } from '@dnd-kit/core';
 import { HexGrid } from './components/HexGrid';
 import { PiecePreview } from './components/PiecePreview';
+import { DragOverlayContent } from './components/DragOverlayContent';
 import { useGameStore } from './hooks/useGameStore';
 
 function App() {
@@ -42,6 +43,7 @@ function App() {
 
   const handleDragMove = (event: DragMoveEvent) => {
     const dropData = event.over?.data.current;
+    console.log('Drag over:', event.over?.id, 'coord:', dropData?.coord);
     if (dropData?.coord) {
       setHoveredPosition(dropData.coord);
     } else {
@@ -95,10 +97,12 @@ function App() {
         </div>
       </div>
 
-      <DragOverlay>
-        {draggedPiece && (
-          <PiecePreview piece={draggedPiece} index={0} />
-        )}
+      <DragOverlay dropAnimation={null}>
+        {draggedPiece ? (
+          <div style={{ opacity: 0.8, cursor: 'grabbing' }}>
+            <PiecePreview piece={draggedPiece} index={-1} />
+          </div>
+        ) : null}
       </DragOverlay>
     </DndContext>
   );

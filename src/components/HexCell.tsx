@@ -29,7 +29,7 @@ export const HexCell: React.FC<HexCellProps> = ({
   // Use basic hexToPixel for now to debug
   const pos = hexToPixel(coord, size);
   const effectiveSize = size; // Don't reduce size for gap
-  
+
   // Debug specific cells
   if (coord.q === 0 && coord.r === 0) {
     console.log('Center cell (0,0) position:', pos);
@@ -51,7 +51,7 @@ export const HexCell: React.FC<HexCellProps> = ({
   if (filled && color) {
     fillColor = color;
   }
-  
+
   // Debug: Highlight center cell
   if (coord.q === 0 && coord.r === 0) {
     fillColor = '#555'; // Lighter gray for center

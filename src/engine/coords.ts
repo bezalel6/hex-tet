@@ -75,27 +75,74 @@ export function mirror(hex: Hex): Hex {
 
 // Generate a hexagonal grid with specified edge length
 export function generateHexGrid(edgeLen: number): Hex[] {
-  // For a hex grid where each edge has 'edgeLen' cells,
-  // the radius (maximum distance from center) is edgeLen - 1
-  const radius = edgeLen - 1;
-  const coords: Hex[] = [];
+  // For a proper hexagonal grid where each edge has exactly 'edgeLen' cells:
+  // - The center is at (0,0)
+  // - Each edge should have exactly edgeLen cells
+  // - Total cells = 3 * edgeLen^2 - 3 * edgeLen + 1
   
-  for (let q = -radius; q <= radius; q++) {
-    const r1 = Math.max(-radius, -q - radius);
-    const r2 = Math.min(radius, -q + radius);
+  const coords: Hex[] = [];
+  const N = edgeLen - 1; // This gives us edgeLen cells per edge
+  
+  // Generate all hexes within the hexagonal boundary
+  for (let q = -N; q <= N; q++) {
+    const r1 = Math.max(-N, -q - N);
+    const r2 = Math.min(N, -q + N);
     for (let r = r1; r <= r2; r++) {
       coords.push({ q, r });
     }
   }
   
+  // Verify the grid
+  const expectedCells = 3 * edgeLen * edgeLen - 3 * edgeLen + 1;
+  console.log(`Generated hex grid with edgeLen=${edgeLen}:`);
+  console.log(`- Coordinate range: -${N} to ${N}`);
+  console.log(`- Total cells: ${coords.length} (expected: ${expectedCells})`);
+  console.log(`- Edge cells count: ${edgeLen} per edge`);
+  
+  // Count cells on one edge to verify
+  const edgeCells = coords.filter(c => c.q === -N && c.r >= 0 && c.r <= N).length;
+  console.log(`- Verified edge length: ${edgeCells} cells`);
+  
   return coords;
 }
 
-// Convert hex to pixel coordinates for rendering (pointy-top orientation)
+// Convert hex to pixel coordinates for rendering (flat-top orientation)
 export function hexToPixel(hex: Hex, size: number = 30): { x: number; y: number } {
-  const x = size * (Math.sqrt(3) * hex.q + Math.sqrt(3) / 2 * hex.r);
-  const y = size * (3 / 2 * hex.r);
+  const x = size * (3/2 * hex.q);
+  const y = size * (Math.sqrt(3)/2 * hex.q + Math.sqrt(3) * hex.r);
   return { x, y };
+}
+
+// Convert hex to pixel with proper spacing (accounts for gaps between cells)
+export function hexToPixelWithGap(hex: Hex, size: number, gap: number): { x: number; y: number } {
+  // Apply gap as spacing between cells, not by reducing cell size
+  const spacing = size + gap;
+  const x = spacing * (3/2 * hex.q);
+  const y = spacing * (Math.sqrt(3)/2 * hex.q + Math.sqrt(3) * hex.r);
+  return { x, y };
+}
+
+// Get the bounding box for a hex grid
+export function getGridBounds(hexes: Hex[], size: number, gap: number = 0): { minX: number, maxX: number, minY: number, maxY: number, width: number, height: number } {
+  let minX = Infinity, maxX = -Infinity;
+  let minY = Infinity, maxY = -Infinity;
+  
+  for (const hex of hexes) {
+    const pos = hexToPixelWithGap(hex, size, gap);
+    minX = Math.min(minX, pos.x - size);
+    maxX = Math.max(maxX, pos.x + size);
+    minY = Math.min(minY, pos.y - size);
+    maxY = Math.max(maxY, pos.y + size);
+  }
+  
+  return {
+    minX,
+    maxX,
+    minY,
+    maxY,
+    width: maxX - minX,
+    height: maxY - minY
+  };
 }
 
 // Normalize a shape (array of hexes) to have its "center of mass" at origin

@@ -35,8 +35,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   initGame: (seed?: string) => {
     const engine = new GameEngine({
-      edgeLength: 5,
-      singleHexRarity: 0.05,
+      edgeLength: 5, // 5x5 radius grid
+      singleHexRarity: 1.0, // force single-hex pieces for focused testing
       pointsPerLine: 10,
       piecesPerSet: 3,
       seed,

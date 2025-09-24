@@ -1,8 +1,5 @@
 import {
   add,
-  directions,
-  distance,
-  equals,
   generateHexGrid,
   type Hex,
   key,
@@ -127,7 +124,6 @@ export class Board {
     }
 
     // Now go forward from the start to build the complete line
-    const lineStart = current;
     while (this.isValidCoord(current) && !this.isCellEmpty(current)) {
       line.push(current);
       current = add(current, direction);

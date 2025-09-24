@@ -12,7 +12,7 @@ interface PieceDraggableProps {
 }
 
 export const PieceDraggable: React.FC<PieceDraggableProps> = ({ piece, index }) => {
-  const { rotatePiece, draggedPiece } = useGameStore();
+  const { rotatePiece } = useGameStore();
   
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: piece.id,
@@ -48,7 +48,7 @@ export const PieceDraggable: React.FC<PieceDraggableProps> = ({ piece, index }) 
       transition={{ delay: index * 0.1 }}
     >
       <div className="relative">
-        <PiecePreview piece={piece} interactive={!isDragging} />
+        <PiecePreview piece={piece} index={index} />
         
         {!isDragging && (
           <motion.button

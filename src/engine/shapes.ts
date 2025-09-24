@@ -72,22 +72,22 @@ const Single: Hex[] = [
   { q: 0, r: 0 },
 ];
 
-// Define all piece types with colors
+// Define all piece types with colors (pink/magenta theme matching target)
 export const PIECE_TYPES: PieceType[] = [
-  { id: "I4", name: "Line", cells: normalizeShape(I4), color: "#00bcd4" }, // Cyan
-  { id: "Z4", name: "Zigzag", cells: normalizeShape(Z4), color: "#f44336" }, // Red
-  { id: "L4", name: "L-Shape", cells: normalizeShape(L4), color: "#ff9800" }, // Orange
-  { id: "T4", name: "T-Shape", cells: normalizeShape(T4), color: "#9c27b0" }, // Purple
-  { id: "Y4", name: "Y-Shape", cells: normalizeShape(Y4), color: "#4caf50" }, // Green
-  { id: "O4", name: "Diamond", cells: normalizeShape(O4), color: "#ffeb3b" }, // Yellow
-  { id: "W4", name: "Wide", cells: normalizeShape(W4), color: "#2196f3" }, // Blue
+  { id: "I4", name: "Line", cells: normalizeShape(I4), color: "#ff69b4" }, // Hot Pink
+  { id: "Z4", name: "Zigzag", cells: normalizeShape(Z4), color: "#ff1493" }, // Deep Pink
+  { id: "L4", name: "L-Shape", cells: normalizeShape(L4), color: "#ff69b4" }, // Hot Pink
+  { id: "T4", name: "T-Shape", cells: normalizeShape(T4), color: "#ff1493" }, // Deep Pink
+  { id: "Y4", name: "Y-Shape", cells: normalizeShape(Y4), color: "#ff69b4" }, // Hot Pink
+  { id: "O4", name: "Diamond", cells: normalizeShape(O4), color: "#ff1493" }, // Deep Pink
+  { id: "W4", name: "Wide", cells: normalizeShape(W4), color: "#ff69b4" }, // Hot Pink
   {
     id: "Single",
     name: "Single",
     cells: normalizeShape(Single),
-    color: "#9e9e9e",
+    color: "#90ee90",
     rarity: 0.05,
-  }, // Gray
+  }, // Light Green (special piece)
 ];
 
 // Generate all unique orientations for a shape
@@ -157,13 +157,17 @@ export function generatePiece(
   const orientations = PIECE_ORIENTATIONS.get(pieceType.id)!;
   const orientationIndex = Math.floor(rng() * orientations.length);
 
-  return {
+  const piece = {
     id: `piece-${Date.now()}-${Math.random()}`,
     typeId: pieceType.id,
     cells: orientations[orientationIndex],
     color: pieceType.color,
     orientation: orientationIndex,
   };
+  
+  console.log(`Generated piece ${pieceType.id}:`, piece.cells.map(c => `(${c.q},${c.r})`));
+  
+  return piece;
 }
 
 // Generate a set of pieces (ensuring no duplicates in the same set)
@@ -177,6 +181,7 @@ export function generatePieceSet(
 
   while (pieces.length < count) {
     const piece = generatePiece(rng, singleHexRarity);
+    console.log('Generated piece:', piece);
     const key = `${piece.typeId}-${piece.orientation}`;
 
     // Allow duplicates only for single hex pieces

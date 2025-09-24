@@ -1,6 +1,6 @@
 import React from 'react';
 import { useDroppable } from '@dnd-kit/core';
-import { type Hex, hexToPixelWithGap } from '../engine/coords';
+import { type Hex, hexToPixel, hexToPixelWithGap } from '../engine/coords';
 
 interface HexCellProps {
   coord: Hex;
@@ -26,8 +26,17 @@ export const HexCell: React.FC<HexCellProps> = ({
     data: { coord },
   });
 
-  const pos = hexToPixelWithGap(coord, size, gap);
+  // Use basic hexToPixel for now to debug
+  const pos = hexToPixel(coord, size);
   const effectiveSize = size; // Don't reduce size for gap
+  
+  // Debug specific cells
+  if (coord.q === 0 && coord.r === 0) {
+    console.log('Center cell (0,0) position:', pos);
+  }
+  if (coord.q === -4 && coord.r === 0) {
+    console.log('Edge cell (-4,0) position:', pos);
+  }
 
   // Calculate hexagon points (flat-top orientation)
   const points = Array.from({ length: 6 }, (_, i) => {
@@ -41,6 +50,11 @@ export const HexCell: React.FC<HexCellProps> = ({
   let fillColor = '#3a3a3a'; // Dark gray for empty cells
   if (filled && color) {
     fillColor = color;
+  }
+  
+  // Debug: Highlight center cell
+  if (coord.q === 0 && coord.r === 0) {
+    fillColor = '#555'; // Lighter gray for center
   }
 
   // Determine stroke and effects
@@ -75,6 +89,19 @@ export const HexCell: React.FC<HexCellProps> = ({
           transition: 'all 0.15s ease',
         }}
       />
+      {/* Debug: Show coordinates */}
+      <text
+        x={0}
+        y={0}
+        textAnchor="middle"
+        dominantBaseline="middle"
+        fill="white"
+        fontSize="10"
+        fontFamily="monospace"
+        style={{ pointerEvents: 'none' }}
+      >
+        {coord.q},{coord.r}
+      </text>
     </g>
   );
 };

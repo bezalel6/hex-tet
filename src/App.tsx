@@ -5,15 +5,14 @@ import {
   type DragEndEvent,
   type DragStartEvent,
   type DragCancelEvent,
-  type DragMoveEvent,
+  type DragOverEvent,
 } from '@dnd-kit/core';
 import { HexGrid } from './components/HexGrid';
 import { PiecePreview } from './components/PiecePreview';
-import { DragOverlayContent } from './components/DragOverlayContent';
 import { useGameStore } from './hooks/useGameStore';
 
 function App() {
-  const { initGame, resetGame, currentPieces, placePiece, setDraggedPiece, setHoveredPosition, board, draggedPiece } =
+  const { initGame, resetGame, currentPieces, placePiece, setDraggedPiece, setHoveredPosition, board, draggedPiece, hoveredPosition } =
     useGameStore();
 
   // Initialize game on mount
@@ -41,9 +40,8 @@ function App() {
     }
   };
 
-  const handleDragMove = (event: DragMoveEvent) => {
+  const handleDragOver = (event: DragOverEvent) => {
     const dropData = event.over?.data.current;
-    console.log('Drag over:', event.over?.id, 'coord:', dropData?.coord);
     if (dropData?.coord) {
       setHoveredPosition(dropData.coord);
     } else {
@@ -53,10 +51,10 @@ function App() {
 
   const handleDragEnd = (event: DragEndEvent) => {
     const piece = event.active.data.current?.piece;
-    const dropData = event.over?.data.current;
+    const hovered = hoveredPosition;
 
-    if (piece && dropData?.coord) {
-      placePiece(piece, dropData.coord);
+    if (piece && hovered) {
+      placePiece(piece, hovered);
     }
 
     setDraggedPiece(null);
@@ -79,7 +77,7 @@ function App() {
   return (
     <DndContext
       onDragStart={handleDragStart}
-      onDragMove={handleDragMove}
+      onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >

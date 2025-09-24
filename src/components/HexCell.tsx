@@ -1,6 +1,6 @@
 import React from 'react';
 import { useDroppable } from '@dnd-kit/core';
-import { type Hex, hexToPixel, hexToPixelWithGap } from '../engine/coords';
+import { type Hex, hexToPixel } from '../engine/coords';
 
 interface HexCellProps {
   coord: Hex;
@@ -21,22 +21,12 @@ export const HexCell: React.FC<HexCellProps> = ({
   isValidPlacement = false,
   isHovered = false,
 }) => {
-  const { setNodeRef, isOver } = useDroppable({
+  const { setNodeRef } = useDroppable({
     id: `hex-${coord.q}-${coord.r}`,
     data: { coord },
   });
-
-  // Use basic hexToPixel for now to debug
   const pos = hexToPixel(coord, size);
   const effectiveSize = size; // Don't reduce size for gap
-
-  // Debug specific cells
-  if (coord.q === 0 && coord.r === 0) {
-    console.log('Center cell (0,0) position:', pos);
-  }
-  if (coord.q === -4 && coord.r === 0) {
-    console.log('Edge cell (-4,0) position:', pos);
-  }
 
   // Calculate hexagon points (flat-top orientation)
   const points = Array.from({ length: 6 }, (_, i) => {
@@ -52,11 +42,6 @@ export const HexCell: React.FC<HexCellProps> = ({
     fillColor = color;
   }
 
-  // Debug: Highlight center cell
-  if (coord.q === 0 && coord.r === 0) {
-    fillColor = '#555'; // Lighter gray for center
-  }
-
   // Determine stroke and effects
   let strokeColor = '#2a2a2a'; // Darker stroke for depth
   let strokeWidth = 1;
@@ -67,18 +52,21 @@ export const HexCell: React.FC<HexCellProps> = ({
     strokeWidth = 1.5;
   }
 
-  if (isOver && isValidPlacement && !filled) {
-    opacity = 0.8;
-    strokeColor = '#888';
-    strokeWidth = 2;
-  }
-
   return (
     <g
-      ref={setNodeRef as any}
       transform={`translate(${pos.x},${pos.y})`}
       style={{ cursor: isValidPlacement && !filled ? 'pointer' : 'default' }}
+      data-coord={`${coord.q},${coord.r}`}
     >
+      {/* Droppable hit area - ensures correct bounding client rect */}
+      <rect
+        ref={setNodeRef as any}
+        x={-effectiveSize}
+        y={-effectiveSize}
+        width={effectiveSize * 2}
+        height={effectiveSize * 2}
+        fill="transparent"
+      />
       <polygon
         points={points}
         fill={fillColor}
@@ -89,19 +77,6 @@ export const HexCell: React.FC<HexCellProps> = ({
           transition: 'all 0.15s ease',
         }}
       />
-      {/* Debug: Show coordinates */}
-      <text
-        x={0}
-        y={0}
-        textAnchor="middle"
-        dominantBaseline="middle"
-        fill="white"
-        fontSize="10"
-        fontFamily="monospace"
-        style={{ pointerEvents: 'none' }}
-      >
-        {coord.q},{coord.r}
-      </text>
     </g>
   );
 };

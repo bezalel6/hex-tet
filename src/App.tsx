@@ -1,19 +1,18 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import {
   DndContext,
+  DragOverlay,
   type DragEndEvent,
   type DragStartEvent,
   type DragCancelEvent,
+  type DragMoveEvent,
 } from '@dnd-kit/core';
-import { motion, AnimatePresence } from 'framer-motion';
 import { HexGrid } from './components/HexGrid';
-import { HUD } from './components/HUD';
-import { PieceDraggable } from './components/PieceDraggable';
+import { PiecePreview } from './components/PiecePreview';
 import { useGameStore } from './hooks/useGameStore';
-import { fromKey } from './engine/coords';
 
 function App() {
-  const { initGame, resetGame, currentPieces, placePiece, setDraggedPiece, draggedPiece, board } =
+  const { initGame, resetGame, currentPieces, placePiece, setDraggedPiece, setHoveredPosition, board, draggedPiece } =
     useGameStore();
 
   // Initialize game on mount
@@ -41,6 +40,15 @@ function App() {
     }
   };
 
+  const handleDragMove = (event: DragMoveEvent) => {
+    const dropData = event.over?.data.current;
+    if (dropData?.coord) {
+      setHoveredPosition(dropData.coord);
+    } else {
+      setHoveredPosition(null);
+    }
+  };
+
   const handleDragEnd = (event: DragEndEvent) => {
     const piece = event.active.data.current?.piece;
     const dropData = event.over?.data.current;
@@ -50,10 +58,12 @@ function App() {
     }
 
     setDraggedPiece(null);
+    setHoveredPosition(null);
   };
 
   const handleDragCancel = (event: DragCancelEvent) => {
     setDraggedPiece(null);
+    setHoveredPosition(null);
   };
 
   if (!board) {
@@ -67,49 +77,29 @@ function App() {
   return (
     <DndContext
       onDragStart={handleDragStart}
+      onDragMove={handleDragMove}
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
-      <div className="min-h-screen bg-gray-900 text-white flex">
-        {/* Main Game Area */}
-        <div className="flex-1 flex items-center justify-center">
-          <HexGrid />
-        </div>
+      <div className="min-h-screen bg-[#1a1a1a] text-white flex items-center justify-center relative">
+        {/* Main Game Area - Centered */}
+        <HexGrid />
 
-        {/* Right Panel */}
-        <div className="w-80 bg-gray-800 p-6 flex flex-col">
-          <HUD />
-
-          {/* Current Pieces */}
-          <div className="mt-8 flex-1">
-            <motion.h2
-              className="text-xl font-semibold mb-4 text-center"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-            >
-              Available Pieces
-            </motion.h2>
-
-            <div className="space-y-4">
-              <AnimatePresence mode="popLayout">
-                {currentPieces.map((piece, index) => (
-                  <PieceDraggable key={piece.id} piece={piece} index={index} />
-                ))}
-              </AnimatePresence>
-            </div>
-
-            {currentPieces.length === 0 && (
-              <motion.div
-                className="text-center text-gray-500 mt-8"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-              >
-                Generating new pieces...
-              </motion.div>
-            )}
+        {/* Piece Previews - Positioned on the right */}
+        <div className="absolute" style={{ right: '150px', top: '50%', transform: 'translateY(-50%)' }}>
+          <div className="flex flex-col" style={{ gap: '60px' }}>
+            {currentPieces.map((piece, index) => (
+              <PiecePreview key={piece.id} piece={piece} index={index} />
+            ))}
           </div>
         </div>
       </div>
+
+      <DragOverlay>
+        {draggedPiece && (
+          <PiecePreview piece={draggedPiece} index={0} />
+        )}
+      </DragOverlay>
     </DndContext>
   );
 }

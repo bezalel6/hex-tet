@@ -1,84 +1,84 @@
 import React from 'react';
-import { motion } from 'framer-motion';
-import { Piece } from '../engine/shapes';
+import { useDraggable } from '@dnd-kit/core';
+import { type Piece } from '../engine/shapes';
 import { hexToPixel } from '../engine/coords';
+import { GRID_CONFIG } from '../config/grid.config';
 
 interface PiecePreviewProps {
   piece: Piece;
-  size?: number;
-  interactive?: boolean;
-  onClick?: () => void;
+  index: number;
 }
 
-export const PiecePreview: React.FC<PiecePreviewProps> = ({
-  piece,
-  size = 20,
-  interactive = true,
-  onClick,
-}) => {
-  // Calculate bounding box for the piece
+export const PiecePreview: React.FC<PiecePreviewProps> = ({ piece, index }) => {
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+    id: piece.id,
+    data: { piece },
+  });
+
+  const style = transform ? {
+    transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+  } : undefined;
+
+  const cellSize = GRID_CONFIG.previewCellSize;
+  const svgSize = 120;
+
+  // Calculate bounds of the piece
   let minX = Infinity, maxX = -Infinity;
   let minY = Infinity, maxY = -Infinity;
-  
-  const positions = piece.cells.map(cell => hexToPixel(cell, size));
-  
-  positions.forEach(pos => {
-    minX = Math.min(minX, pos.x - size);
-    maxX = Math.max(maxX, pos.x + size);
-    minY = Math.min(minY, pos.y - size);
-    maxY = Math.max(maxY, pos.y + size);
+
+  piece.cells.forEach(cell => {
+    const pos = hexToPixel(cell, cellSize);
+    const hexRadius = cellSize;
+    minX = Math.min(minX, pos.x - hexRadius);
+    maxX = Math.max(maxX, pos.x + hexRadius);
+    minY = Math.min(minY, pos.y - hexRadius);
+    maxY = Math.max(maxY, pos.y + hexRadius);
   });
-  
-  const width = maxX - minX;
-  const height = maxY - minY;
+
   const centerX = (minX + maxX) / 2;
   const centerY = (minY + maxY) / 2;
-  
+
+  // Use the piece's actual color
+  const pieceColor = piece.color;
+
   return (
-    <motion.div
-      className={`bg-gray-800 rounded-lg p-2 ${interactive ? 'cursor-pointer hover:bg-gray-700' : ''}`}
-      whileHover={interactive ? { scale: 1.05 } : {}}
-      whileTap={interactive ? { scale: 0.95 } : {}}
-      onClick={onClick}
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...listeners}
+      {...attributes}
+      className={`cursor-move ${isDragging ? 'opacity-50' : ''}`}
     >
       <svg
-        width={width + 20}
-        height={height + 20}
-        viewBox={`${minX - 10} ${minY - 10} ${width + 20} ${height + 20}`}
+        width={svgSize}
+        height={svgSize}
+        viewBox={`${centerX - svgSize / 2} ${centerY - svgSize / 2} ${svgSize} ${svgSize}`}
+        className="overflow-visible"
       >
-        <g transform={`translate(${-centerX + width/2}, ${-centerY + height/2})`}>
-          {piece.cells.map((cell, index) => {
-            const pos = hexToPixel(cell, size);
-            const points = [];
-            for (let i = 0; i < 6; i++) {
-              const angle = (Math.PI / 3) * i;
-              const x = size * Math.cos(angle);
-              const y = size * Math.sin(angle);
-              points.push(`${x},${y}`);
-            }
-            const pointsString = points.join(' ');
-            
+        <g>
+          {piece.cells.map((cell, i) => {
+            const pos = hexToPixel(cell, cellSize);
+            const points = Array.from({ length: 6 }, (_, j) => {
+              const angle = (Math.PI / 3) * j - Math.PI / 6; // Flat-top orientation
+              const x = cellSize * Math.cos(angle);
+              const y = cellSize * Math.sin(angle);
+              return `${x},${y}`;
+            }).join(' ');
+
             return (
-              <motion.polygon
-                key={index}
-                points={pointsString}
-                fill={piece.color}
-                stroke="#1e293b"
-                strokeWidth={2}
+              <polygon
+                key={i}
+                points={points}
+                fill={pieceColor}
+                stroke="#111"
+                strokeWidth={1}
                 transform={`translate(${pos.x}, ${pos.y})`}
-                initial={{ scale: 0, rotate: 0 }}
-                animate={{ scale: 1, rotate: 0 }}
-                transition={{
-                  type: 'spring',
-                  stiffness: 200,
-                  damping: 20,
-                  delay: index * 0.05,
-                }}
+                opacity={0.9}
               />
             );
           })}
         </g>
       </svg>
-    </motion.div>
+    </div>
   );
 };

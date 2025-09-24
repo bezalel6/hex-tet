@@ -74,20 +74,20 @@ const Single: Hex[] = [
 
 // Define all piece types with colors (pink/magenta theme matching target)
 export const PIECE_TYPES: PieceType[] = [
-  { id: "I4", name: "Line", cells: normalizeShape(I4), color: "#ff69b4" }, // Hot Pink
-  { id: "Z4", name: "Zigzag", cells: normalizeShape(Z4), color: "#ff1493" }, // Deep Pink
-  { id: "L4", name: "L-Shape", cells: normalizeShape(L4), color: "#ff69b4" }, // Hot Pink
-  { id: "T4", name: "T-Shape", cells: normalizeShape(T4), color: "#ff1493" }, // Deep Pink
-  { id: "Y4", name: "Y-Shape", cells: normalizeShape(Y4), color: "#ff69b4" }, // Hot Pink
-  { id: "O4", name: "Diamond", cells: normalizeShape(O4), color: "#ff1493" }, // Deep Pink
-  { id: "W4", name: "Wide", cells: normalizeShape(W4), color: "#ff69b4" }, // Hot Pink
+  { id: "I4", name: "Line",    cells: normalizeShape(I4), color: "#ef4444" }, // red-500
+  { id: "Z4", name: "Zigzag",  cells: normalizeShape(Z4), color: "#f97316" }, // orange-500
+  { id: "L4", name: "L-Shape", cells: normalizeShape(L4), color: "#eab308" }, // yellow-500
+  { id: "T4", name: "T-Shape", cells: normalizeShape(T4), color: "#22c55e" }, // green-500
+  { id: "Y4", name: "Y-Shape", cells: normalizeShape(Y4), color: "#06b6d4" }, // cyan-500
+  { id: "O4", name: "Diamond", cells: normalizeShape(O4), color: "#3b82f6" }, // blue-500
+  { id: "W4", name: "Wide",    cells: normalizeShape(W4), color: "#a855f7" }, // violet-500
   {
     id: "Single",
     name: "Single",
     cells: normalizeShape(Single),
-    color: "#90ee90",
+    color: "#84cc16", // lime-500
     rarity: 0.05,
-  }, // Light Green (special piece)
+  },
 ];
 
 // Generate all unique orientations for a shape

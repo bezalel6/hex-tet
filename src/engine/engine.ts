@@ -91,14 +91,19 @@ export class GameEngine {
       (this as any).lastScoreUpdate = scoreUpdate;
     }
 
-    // Generate new pieces if all are placed
-    if (this.currentPieces.length === 0) {
-      this.generateNewPieces();
-    } else {
-      // Check if remaining pieces can be placed
-      if (!this.board.anyPieceFits(this.currentPieces)) {
-        this.gameOver = true;
-      }
+    // Immediately replenish a new piece to keep tray at target count
+    if (this.currentPieces.length < this.config.piecesPerSet) {
+      const replenish = generatePieceSet(
+        this.config.piecesPerSet - this.currentPieces.length,
+        this.rng,
+        this.config.singleHexRarity,
+      );
+      this.currentPieces.push(...replenish);
+    }
+
+    // Check if any remaining piece can be placed
+    if (!this.board.anyPieceFits(this.currentPieces)) {
+      this.gameOver = true;
     }
 
     return true;

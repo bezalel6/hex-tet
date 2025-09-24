@@ -1,5 +1,6 @@
 import React from 'react';
 import { useDroppable } from '@dnd-kit/core';
+import { useGameStore } from '../hooks/useGameStore';
 import { type Hex, hexToPixel } from '../engine/coords';
 
 interface HexCellProps {
@@ -21,6 +22,7 @@ export const HexCell: React.FC<HexCellProps> = ({
   isValidPlacement = false,
   isHovered = false,
 }) => {
+  const rotation = useGameStore(s => s.rotation);
   const { setNodeRef } = useDroppable({
     id: `hex-${coord.q}-${coord.r}`,
     data: { coord },
@@ -54,7 +56,7 @@ export const HexCell: React.FC<HexCellProps> = ({
 
   return (
     <g
-      transform={`translate(${pos.x},${pos.y})`}
+      transform={`translate(${pos.x},${pos.y}) rotate(${rotation})`}
       style={{ cursor: isValidPlacement && !filled ? 'pointer' : 'default' }}
       data-coord={`${coord.q},${coord.r}`}
     >

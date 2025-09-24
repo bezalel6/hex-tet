@@ -1,8 +1,10 @@
 import React from 'react';
 import { useDraggable } from '@dnd-kit/core';
+import { CSS } from '@dnd-kit/utilities';
 import { type Piece } from '../engine/shapes';
 import { hexToPixel } from '../engine/coords';
 import { GRID_CONFIG } from '../config/grid.config';
+import { useGameStore } from '../hooks/useGameStore';
 
 interface PiecePreviewProps {
   piece: Piece;
@@ -10,15 +12,15 @@ interface PiecePreviewProps {
 }
 
 export const PiecePreview: React.FC<PiecePreviewProps> = ({ piece, index }) => {
+  const rotation = useGameStore(s => s.rotation);
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: piece.id,
     data: { piece },
     disabled: index < 0, // Disable dragging for overlay preview
   });
 
-  const style = transform ? {
-    transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-  } : undefined;
+  const translate = transform ? CSS.Translate.toString(transform) : undefined;
+  const style = translate ? { transform: translate } : undefined;
 
   // For drag overlay (index < 0), use board cell size
   const isOverlay = index < 0;
@@ -75,7 +77,7 @@ export const PiecePreview: React.FC<PiecePreviewProps> = ({ piece, index }) => {
                 fill={pieceColor}
                 stroke="#111"
                 strokeWidth={1}
-                transform={`translate(${pos.x}, ${pos.y})`}
+                style={{ transform: `translate(${pos.x}px, ${pos.y}px) rotate(${rotation}deg)`, transformOrigin: 'center' }}
                 opacity={0.9}
               />
             );

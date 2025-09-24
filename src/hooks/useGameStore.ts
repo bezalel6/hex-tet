@@ -8,6 +8,7 @@ interface GameStore extends GameState {
   draggedPiece: Piece | null;
   hoveredPosition: Hex | null;
   validPlacements: Hex[] | null;
+  rotation: number;
 
   // Actions
   initGame: (seed?: string) => void;
@@ -18,6 +19,7 @@ interface GameStore extends GameState {
   setHoveredPosition: (position: Hex | null) => void;
   updateValidPlacements: () => void;
   getGameState: () => GameState | null;
+  setRotation: (deg: number) => void;
 }
 
 export const useGameStore = create<GameStore>((set, get) => ({
@@ -32,11 +34,21 @@ export const useGameStore = create<GameStore>((set, get) => ({
   draggedPiece: null,
   hoveredPosition: null,
   validPlacements: null,
+  rotation: (() => {
+    try {
+      if (typeof window !== 'undefined') {
+        const v = window.localStorage.getItem('hex-tet:rotation');
+        const n = v != null ? Number(v) : 0;
+        if (!Number.isNaN(n)) return ((n % 360) + 360) % 360;
+      }
+    } catch {}
+    return 30; // sensible default per UX feedback
+  })(),
 
   initGame: (seed?: string) => {
     const engine = new GameEngine({
       edgeLength: 5, // 5x5 radius grid
-      singleHexRarity: 1.0, // force single-hex pieces for focused testing
+      singleHexRarity: 0.05,
       pointsPerLine: 10,
       piecesPerSet: 3,
       seed,
@@ -50,6 +62,16 @@ export const useGameStore = create<GameStore>((set, get) => ({
       hoveredPosition: null,
       validPlacements: null,
     });
+  },
+
+  setRotation: (deg: number) => {
+    const clamped = ((deg % 360) + 360) % 360;
+    try {
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem('hex-tet:rotation', String(clamped));
+      }
+    } catch {}
+    set({ rotation: clamped });
   },
 
   resetGame: (seed?: string) => {

@@ -44,8 +44,7 @@ export const HexGrid: React.FC = () => {
     });
   };
 
-  // Simple fixed viewBox for debugging
-  const debugViewBox = "-300 -300 600 600";
+  // Computed viewBox based on actual bounds so board is centered and tight
 
   return (
     <div className="flex items-center justify-center relative">
@@ -53,7 +52,7 @@ export const HexGrid: React.FC = () => {
         ref={svgRef}
         width={600}
         height={600}
-        viewBox={debugViewBox}
+        viewBox={viewBox}
         className="overflow-visible"
         style={{ background: 'transparent' }}
       >
